@@ -1,15 +1,15 @@
-CFLAGS = -m32
-text: main.o render.o points.c
-	gcc $(CFLAGS) main.o render.o points.c -L/usr/lib -lalleg -o scena --debug
+CFLAGS = -m32 -g -Wall
+scena: main.o render.o
+	gcc $(CFLAGS) main.o render.o -L/usr/lib -lalleg -o scena
 
 main.o: main.c
-	gcc $(CFLAGS) -c main.c -I/usr/include -o main.o --debug -Wall
+	gcc $(CFLAGS) -c main.c -I/usr/include -o main.o
 
 render.o: render.s
-	nasm -f elf render.s
+	nasm -f elf -F stabs -g render.s
 
 clean:
 	rm -f scena render.o main.o
 
-test:
+test: scena
 	./scena

@@ -2,12 +2,12 @@
 #include <allegro.h>
 #include <stdio.h>
 
-long num_points;
-long *points;
+#include "points.h"
+
 #define _SCREEN_W 640
 #define _SCREEN_H 480
 
-void render(long **gbuffer, long *points, long num_points,
+void render(long **gbuffer, long *points, unsigned long num_points,
 		long movx, long movy);
 
 int main(int argc, char** argv)
@@ -23,8 +23,8 @@ int main(int argc, char** argv)
 	long movx = 0, movy = 0;
 	for(;;) {
 		if (key[KEY_ESC]) return 0;
-		if (key[KEY_UP]) movx++;
-		if (key[KEY_DOWN]) movx--;
+		if (key[KEY_UP]) movx--;
+		if (key[KEY_DOWN]) movx++;
 		if (key[KEY_LEFT]) movy--;
 		if (key[KEY_RIGHT]) movy++;
 
