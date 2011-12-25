@@ -10,6 +10,38 @@
 void render(long **gbuffer, long *points, unsigned long num_points,
 		long movx, long movy);
 
+#define swap(a,b,t) t = a; a = b; b = t;
+
+void draw_line(long** bmp, long x, long y, long x1, long y1)
+{
+	int steep = abs(y1-y) > abs(x1-x);
+	long t;
+	if (steep) {
+		swap(x, y, t);
+		swap(x1, y1, t);
+	}
+	if (x > x1) {
+		swap(x, x1, t);
+		swap(y, y1, t);
+	}
+	double dx = x1 - x, dy = abs(y1 - y);
+	double error = 0;
+	double derror = dy / dx;
+	long ystep = (y < y1) ? 1 : -1;
+	while (x < x1) {
+		if (steep)
+			bmp[x][y] = 0xffffff;
+		else
+			bmp[y][x] = 0xffffff;
+		error += derror;
+		if (error >= 0.5) {
+			y += ystep;
+			error -= 1.0;
+		}
+		x++;
+	}
+}
+
 int main(int argc, char** argv)
 {
 	allegro_init();

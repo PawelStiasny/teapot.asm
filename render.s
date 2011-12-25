@@ -1,11 +1,14 @@
 bits 32
 
+; line drawing in C
+extern draw_line
+
 global render
-%idefine	buffer	[ebp+8]
-%idefine	points	[ebp+12]
-%idefine	num_points	[ebp+16]
-%idefine	movx	[ebp+20]
-%idefine	movy	[ebp+24]
+%idefine	buffer		DWORD [ebp+8]
+%idefine	points		DWORD [ebp+12]
+%idefine	num_points	DWORD [ebp+16]
+%idefine	movx		DWORD [ebp+20]
+%idefine	movy		DWORD [ebp+24]
 
 %idefine	screen_w	640
 %idefine	screen_h	480
@@ -37,6 +40,13 @@ draw_loop:
 skip_loop:
 	dec		ecx
 	jnz		draw_loop
+
+	push	100
+	push	300
+	push	10
+	push	10
+	push	buffer
+	call	draw_line
 
 	pop		edi
 	pop		esi
