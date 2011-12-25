@@ -20,33 +20,60 @@ render:
 	push	edi
 
 	mov		ecx, num_points
-	;dec		ecx
+	shl		ecx, 4
 	mov		eax, points
 	mov		edi, buffer
 draw_loop:
-	mov		edx, [eax+8*ecx-4]	; edx := point[n].y
+; preserve for calling a C drawing function
+	push	ecx
+	push	eax
+; find the beginning of the line
+	mov		edx, [eax+ecx-12]	; edx := point[n].y
 	add		edx, movx			; shift transfrom (y)
 	js		skip_loop			; in drawing area?
 	cmp		edx, screen_h
 	jns		skip_loop
-	mov		esi, [edi+4*edx]	; esi := (long*)line[edx]
-	mov		edx, [eax+8*ecx-8]	; edx := point[n].x
+
+	push	edx
+
+	;mov		esi, [edi+4*edx]	; esi := (long*)line[edx]
+	mov		edx, [eax+ecx-16]	; edx := point[n].x
 	add		edx, movy			; shift transofrm (x)
 	js		skip_loop			; in drawing area?
 	cmp		edx, screen_w
 	jns		skip_loop
-	mov		DWORD [esi+edx*4], 0xffffff	; line[..][edx] := 1
 
-skip_loop:
-	dec		ecx
-	jnz		draw_loop
+	push	edx
 
-	push	100
-	push	300
-	push	10
-	push	10
+; find the end of the line
+	mov		edx, [eax+ecx-4]	; edx := point[n].y
+	add		edx, movx			; shift transfrom (y)
+	js		skip_loop			; in drawing area?
+	cmp		edx, screen_h
+	jns		skip_loop
+
+	push	edx
+
+	;mov		esi, [edi+4*edx]	; esi := (long*)line[edx]
+	mov		edx, [eax+ecx-8]	; edx := point[n].x
+	add		edx, movy			; shift transofrm (x)
+	js		skip_loop			; in drawing area?
+	cmp		edx, screen_w
+	jns		skip_loop
+
+	push	edx
+
+	;mov		DWORD [esi+edx*4], 0xffffff	; line[..][edx] := 1
 	push	buffer
 	call	draw_line
+	add		esp, 20
+	pop		eax
+	pop		ecx
+
+
+skip_loop:
+	sub		ecx, 16
+	jnz		draw_loop
 
 	pop		edi
 	pop		esi
