@@ -2,13 +2,28 @@ bits 32
 
 ; line drawing in C
 extern draw_line
+extern print_vec
+
+%macro	print_mmx 1
+	push	ecx
+	push	eax
+
+	sub		esp, 16
+	movups	[esp], %1
+	call	print_vec
+	add		esp, 16
+
+	pop		eax
+	pop		ecx
+%endmacro
+	
 
 global render
 %idefine	buffer		DWORD [ebp+8]
 %idefine	points		DWORD [ebp+12]
 %idefine	num_points	DWORD [ebp+16]
-%idefine	movx		DWORD [ebp+20]
-%idefine	movy		DWORD [ebp+24]
+%idefine	movmx		DWORD [ebp+20]
+%idefine	rotmx		DWORD [ebp+24]
 
 %idefine	screen_w	640
 %idefine	screen_h	480
@@ -19,52 +34,56 @@ render:
 	push	esi
 	push	edi
 
+; ecx := 24 * num_points
 	mov		ecx, num_points
 	mov		eax, ecx
 	shl		eax, 3
 	shl		ecx, 4
 	add		ecx, eax
+
+	mov		eax, movmx
+	movups	xmm1, [eax]		; xmm1 := movx, movy, movz, ...
+	;print_mmx	xmm1
+
+	mov		eax, rotmx
+	movups	xmm5, [eax]
+	print_mmx xmm5
+	movups	xmm6, [eax+12]
+	print_mmx xmm6
+	movups	xmm7, [eax+24]
+	print_mmx xmm7
+
 	mov		eax, points
 	mov		edi, buffer
+
 draw_loop:
 ; preserve for calling a C drawing function
 	push	ecx
 	push	eax
-; find the beginning of the line
-	mov		edx, [eax+ecx-20]	; edx := point[n].y
-	add		edx, movx			; shift transfrom (y)
-	js		skip_loop			; in drawing area?
-	cmp		edx, screen_h
-	jns		skip_loop
 
+	movups	xmm0, [eax+ecx-24]
+
+	;print_mmx	xmm0
+
+	addps		xmm0, xmm1
+	;print_mmx	xmm0
+	cvttss2si	esi, xmm0
+	shufps		xmm0, xmm0, 0b00111001
+	cvttss2si	edx, xmm0
 	push	edx
+	push	esi
 
-	;mov		esi, [edi+4*edx]	; esi := (long*)line[edx]
-	mov		edx, [eax+ecx-24]	; edx := point[n].x
-	add		edx, movy			; shift transofrm (x)
-	js		skip_loop			; in drawing area?
-	cmp		edx, screen_w
-	jns		skip_loop
+	movups	xmm0, [eax+ecx-12]
 
+	;print_mmx	xmm0
+
+	addps		xmm0, xmm1
+	cvttss2si	esi, xmm0
+	shufps		xmm0, xmm0, 0b00111001
+	cvttss2si	edx, xmm0
 	push	edx
+	push	esi
 
-; find the end of the line
-	mov		edx, [eax+ecx-8]	; edx := point[n].y
-	add		edx, movx			; shift transfrom (y)
-	js		skip_loop			; in drawing area?
-	cmp		edx, screen_h
-	jns		skip_loop
-
-	push	edx
-
-	;mov		esi, [edi+4*edx]	; esi := (long*)line[edx]
-	mov		edx, [eax+ecx-12]	; edx := point[n].x
-	add		edx, movy			; shift transofrm (x)
-	js		skip_loop			; in drawing area?
-	cmp		edx, screen_w
-	jns		skip_loop
-
-	push	edx
 
 	;mov		DWORD [esi+edx*4], 0xffffff	; line[..][edx] := 1
 	push	buffer

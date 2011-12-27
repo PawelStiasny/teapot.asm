@@ -1,7 +1,7 @@
 /* hard-coded array of points */
 unsigned long num_points = 11;
 
-long points[] = {
+float points[] = {
 	/* a square */
 	10, 10, 0, 10, 20, 0,
 	10, 20, 0, 20, 20, 0,
@@ -15,6 +15,8 @@ long points[] = {
 	80, 10, 0, 80, 20, 0,
 	80, 20, 0, 90, 20, 0,
 	90, 20, 0, 90, 10, 0,
-	90, 10, 0, 80, 10, 0
+	90, 10, 0, 80, 10, 0,
+
+	0
 };
 
