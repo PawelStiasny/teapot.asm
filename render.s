@@ -20,7 +20,10 @@ render:
 	push	edi
 
 	mov		ecx, num_points
+	mov		eax, ecx
+	shl		eax, 3
 	shl		ecx, 4
+	add		ecx, eax
 	mov		eax, points
 	mov		edi, buffer
 draw_loop:
@@ -28,7 +31,7 @@ draw_loop:
 	push	ecx
 	push	eax
 ; find the beginning of the line
-	mov		edx, [eax+ecx-12]	; edx := point[n].y
+	mov		edx, [eax+ecx-20]	; edx := point[n].y
 	add		edx, movx			; shift transfrom (y)
 	js		skip_loop			; in drawing area?
 	cmp		edx, screen_h
@@ -37,7 +40,7 @@ draw_loop:
 	push	edx
 
 	;mov		esi, [edi+4*edx]	; esi := (long*)line[edx]
-	mov		edx, [eax+ecx-16]	; edx := point[n].x
+	mov		edx, [eax+ecx-24]	; edx := point[n].x
 	add		edx, movy			; shift transofrm (x)
 	js		skip_loop			; in drawing area?
 	cmp		edx, screen_w
@@ -46,7 +49,7 @@ draw_loop:
 	push	edx
 
 ; find the end of the line
-	mov		edx, [eax+ecx-4]	; edx := point[n].y
+	mov		edx, [eax+ecx-8]	; edx := point[n].y
 	add		edx, movx			; shift transfrom (y)
 	js		skip_loop			; in drawing area?
 	cmp		edx, screen_h
@@ -55,7 +58,7 @@ draw_loop:
 	push	edx
 
 	;mov		esi, [edi+4*edx]	; esi := (long*)line[edx]
-	mov		edx, [eax+ecx-8]	; edx := point[n].x
+	mov		edx, [eax+ecx-12]	; edx := point[n].x
 	add		edx, movy			; shift transofrm (x)
 	js		skip_loop			; in drawing area?
 	cmp		edx, screen_w
@@ -72,7 +75,7 @@ draw_loop:
 
 
 skip_loop:
-	sub		ecx, 16
+	sub		ecx, 24
 	jnz		draw_loop
 
 	pop		edi

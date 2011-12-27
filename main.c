@@ -16,14 +16,10 @@ void render(long **gbuffer, long *points, unsigned long num_points,
 
 void draw_line(long** bmp, long x, long y, long x1, long y1)
 {
-	/*fprintf(stderr, "draw_line called, %ld, %ld, %ld, %ld\n", x, y, x1, y1);
-	fflush(stderr);*/
-
 	assert(0 <= x && x < 640);
 	assert(0 <= y && y < 480);
 	assert(0 <= x1 && x1 < 640);
 	assert(0 <= y1 && y1 < 480);
-
 
 	int steep = abs(y1-y) > abs(x1-x);
 	long t;
@@ -37,7 +33,6 @@ void draw_line(long** bmp, long x, long y, long x1, long y1)
 	}
 	long dx = x1 - x, dy = abs(y1 - y);
 	long error = dx >> 1;
-	//double derror = dy / dx
 	long ystep = (y < y1) ? 1 : -1;
 	while (x <= x1) {
 		if (steep) {
@@ -52,9 +47,6 @@ void draw_line(long** bmp, long x, long y, long x1, long y1)
 		}
 		x++;
 	}
-	/*rest(100);
-	fprintf(stderr, "draw_line exiting\n");
-	fflush(stderr);*/
 }
 
 int main(int argc, char** argv)
