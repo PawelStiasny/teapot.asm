@@ -5,6 +5,7 @@ extern draw_line
 extern print_vec
 
 %macro	print_mmx 1
+%if 0 ; disable debugging
 	push	ecx
 	push	eax
 
@@ -15,8 +16,39 @@ extern print_vec
 
 	pop		eax
 	pop		ecx
+%endif
 %endmacro
 	
+%macro	handle_point 0
+	print_mmx	xmm0
+	; translation
+	addps		xmm0, xmm1
+	; xmm2 := vec.x
+	movaps		xmm2, xmm0
+	shufps		xmm2, xmm2, 0b00000000
+	print_mmx	xmm2
+	mulps		xmm2, xmm5
+	; xmm3 := vec.y
+	movaps		xmm3, xmm0
+	shufps		xmm3, xmm3, 0b01010101
+	print_mmx	xmm3
+	mulps		xmm3, xmm6
+	addps		xmm2, xmm3
+	; xmm0 := vec.z
+	shufps		xmm0, xmm0, 0b10101010
+	print_mmx	xmm0
+	mulps		xmm0, xmm7
+	addps		xmm0, xmm2
+
+	print_mmx	xmm0
+
+	;print_mmx	xmm0
+	cvttss2si	esi, xmm0
+	shufps		xmm0, xmm0, 0b00111001
+	cvttss2si	edx, xmm0
+	push	edx
+	push	esi
+%endmacro
 
 global render
 %idefine	buffer		DWORD [ebp+8]
@@ -62,27 +94,10 @@ draw_loop:
 	push	eax
 
 	movups	xmm0, [eax+ecx-24]
-
-	;print_mmx	xmm0
-
-	addps		xmm0, xmm1
-	;print_mmx	xmm0
-	cvttss2si	esi, xmm0
-	shufps		xmm0, xmm0, 0b00111001
-	cvttss2si	edx, xmm0
-	push	edx
-	push	esi
+	handle_point
 
 	movups	xmm0, [eax+ecx-12]
-
-	;print_mmx	xmm0
-
-	addps		xmm0, xmm1
-	cvttss2si	esi, xmm0
-	shufps		xmm0, xmm0, 0b00111001
-	cvttss2si	edx, xmm0
-	push	edx
-	push	esi
+	handle_point
 
 
 	;mov		DWORD [esi+edx*4], 0xffffff	; line[..][edx] := 1
