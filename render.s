@@ -20,29 +20,24 @@ extern print_vec
 %endmacro
 	
 %macro	handle_point 0
-	print_mmx	xmm0
-	; translation
-	addps		xmm0, xmm1
-	; xmm2 := vec.x
+; xmm2 := vec.x
 	movaps		xmm2, xmm0
 	shufps		xmm2, xmm2, 0b00000000
-	print_mmx	xmm2
 	mulps		xmm2, xmm5
-	; xmm3 := vec.y
+; xmm3 := vec.y
 	movaps		xmm3, xmm0
 	shufps		xmm3, xmm3, 0b01010101
-	print_mmx	xmm3
 	mulps		xmm3, xmm6
 	addps		xmm2, xmm3
-	; xmm0 := vec.z
+; xmm0 := vec.z
 	shufps		xmm0, xmm0, 0b10101010
-	print_mmx	xmm0
 	mulps		xmm0, xmm7
 	addps		xmm0, xmm2
 
-	print_mmx	xmm0
+; translation
+	addps		xmm0, xmm1
 
-	;print_mmx	xmm0
+; convert the result to integer
 	cvttss2si	esi, xmm0
 	shufps		xmm0, xmm0, 0b00111001
 	cvttss2si	edx, xmm0
@@ -73,17 +68,15 @@ render:
 	shl		ecx, 4
 	add		ecx, eax
 
+; register xmm1 contains the translation matrix
 	mov		eax, movmx
 	movups	xmm1, [eax]		; xmm1 := movx, movy, movz, ...
-	;print_mmx	xmm1
 
+; registers xmm5..7 contain the rotation matrix
 	mov		eax, rotmx
 	movups	xmm5, [eax]
-	print_mmx xmm5
 	movups	xmm6, [eax+12]
-	print_mmx xmm6
 	movups	xmm7, [eax+24]
-	print_mmx xmm7
 
 	mov		eax, points
 	mov		edi, buffer
@@ -98,7 +91,6 @@ draw_loop:
 
 	movups	xmm0, [eax+ecx-12]
 	handle_point
-
 
 	;mov		DWORD [esi+edx*4], 0xffffff	; line[..][edx] := 1
 	push	buffer

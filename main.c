@@ -73,8 +73,6 @@ void make_rotation(float* mx, float x, float y, float z)
 	mx[2] = sin(x)*cos(y)*sin(z)-sin(y)*cos(z);
 	mx[6] = sin(y)*sin(z)+sin(x)*cos(y)*cos(z);
 	mx[10] = cos(x)*cos(y);
-	//mx[4] = mx[8] = mx[1] = mx[9] = mx[2] = mx[6] = 0;
-	//mx[0] = mx[5] = mx[10] = 1;
 
 	mx[3] = mx[7] = mx[11] = 0;
 }
