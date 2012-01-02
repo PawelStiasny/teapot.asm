@@ -18,7 +18,7 @@ extern print_vec
 	pop		ecx
 %endif
 %endmacro
-	
+
 %macro	handle_point 0
 ; xmm2 := vec.x
 	movaps		xmm2, xmm0
@@ -75,8 +75,11 @@ render:
 ; registers xmm5..7 contain the rotation matrix
 	mov		eax, rotmx
 	movups	xmm5, [eax]
-	movups	xmm6, [eax+12]
-	movups	xmm7, [eax+24]
+	print_mmx(xmm5)
+	movups	xmm6, [eax+16]
+	print_mmx(xmm6)
+	movups	xmm7, [eax+32]
+	print_mmx(xmm7)
 
 	mov		eax, points
 	mov		edi, buffer
