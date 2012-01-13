@@ -4,7 +4,7 @@ bits 32
 extern draw_line
 extern print_vec
 
-; %define	EXTERN_DRAW	0
+%define	EXTERN_DRAW	1
 
 %macro	print_xmm 1
 %if 0 ; disable debugging
@@ -65,9 +65,7 @@ render:
 ; ecx := 24 * num_points
 	mov		ecx, num_points
 	mov		eax, ecx
-	shl		eax, 3
-	shl		ecx, 4
-	add		ecx, eax
+	shl		ecx, 5
 
 ; register xmm1 contains the translation matrix
 	mov		eax, movmx
@@ -92,13 +90,14 @@ vertex_loop:
 	push	eax
 %endif
 
-	movups	xmm0, [eax+ecx-24]
+	movaps	xmm0, [eax+ecx-32]
+	print_xmm	xmm0
 	handle_point esi, edx
 	push	edx
 	push	esi
 	movaps	xmm4, xmm0
 
-	movups	xmm0, [eax+ecx-12]
+	movaps	xmm0, [eax+ecx-16]
 	handle_point esi, edx
 	push	edx
 	push	esi
@@ -124,7 +123,7 @@ continue_vertex_loop:
 %ifndef EXTERN_DRAW
 	add		esp, 16		; pop calculated points
 %endif
-	sub		ecx, 24
+	sub		ecx, 32
 	jnz		vertex_loop
 
 	pop		ebx

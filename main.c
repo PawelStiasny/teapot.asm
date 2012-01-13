@@ -4,7 +4,9 @@
 #include <math.h>
 #include <assert.h>
 
-#include "points.h"
+// #include "points.h"
+unsigned long num_points = 0;
+float *points = NULL;
 
 #define _SCREEN_W 640
 #define _SCREEN_H 480
@@ -18,6 +20,29 @@ void render(long **gbuffer, float *points, unsigned long num_points,
 void print_vec(float a, float b, float c, float d)
 {
 	printf("%f %f %f %f\n", a, b, c, d);
+	rest(100);
+}
+
+void load_points(const char* filename)
+{
+	FILE* f = fopen(filename, "r");
+	assert(f != NULL);
+	fscanf(f, "%ld", &num_points);
+	points = malloc((num_points+1) * 32);
+	// 16-byte alignment
+	points = (void*)(
+			(unsigned long)points + (unsigned long)(16 - ((unsigned long)points % 16)));
+
+	unsigned long i;
+	for (i = 0; i < num_points; i++) {
+		float* line = points + i*8;
+		line[3] = line[7] = 1.0f;
+		assert(
+			fscanf(f, "%f %f %f %f %f %f", &line[0], &line[1], &line[2],
+				&line[4], &line[5], &line[6])
+			== 6);
+	}
+	fclose(f);
 }
 
 void draw_line(long** bmp, long x, long y, long x1, long y1)
@@ -103,6 +128,8 @@ int main(int argc, char** argv)
 	set_gfx_mode(GFX_AUTODETECT_WINDOWED, _SCREEN_W, _SCREEN_H, 0, 0);
 	BITMAP *buf = create_bitmap(_SCREEN_W,_SCREEN_H);
 	clear(buf);
+
+	load_points("teapot");
 
 	float movmx[4] = { 320.0, 400.0, 0.0, 0.0 };
 	float rotx = 3.14, roty = 0, rotz = 0;

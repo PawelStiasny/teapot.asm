@@ -4,14 +4,18 @@ $ar = file('teapot.obj');
 $scale = 400.0;
 
 $vxes = array();
+$lines = array();
 $pnum = 0;
 
 function put_line($vx1, $vx2) {
-	echo $vx1[0] . ', ' . $vx1[1] . ', ' . $vx1[2] . ', ';
-	echo $vx2[0] . ', ' . $vx2[1] . ', ' . $vx2[2] . ",\n";
+	global $lines;
+	//echo $vx1[0] . ', ' . $vx1[1] . ', ' . $vx1[2] . ', ';
+	//echo $vx2[0] . ', ' . $vx2[1] . ', ' . $vx2[2] . ",\n";
+	$lines[] =  $vx1[0] . ' ' . $vx1[1] . ' ' . $vx1[2] . ' ' .
+		$vx2[0] . ' ' . $vx2[1] . ' ' . $vx2[2] . "\n";
 }
 
-echo "float points[] = {\n";
+// echo "float points[] = {\n";
 
 foreach ($ar as $line) {
 	$desc = explode(' ', $line);
@@ -31,6 +35,9 @@ foreach ($ar as $line) {
 	}
 }
 
-echo "0 };\n";
+// echo "0 };\n";
 
-echo "unsigned long num_points = $pnum;\n";
+// echo "unsigned long num_points = $pnum;\n";
+echo count($lines) . "\n";
+foreach ($lines as $l) 
+	echo $l;
