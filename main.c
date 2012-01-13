@@ -14,6 +14,7 @@ void render(long **gbuffer, float *points, unsigned long num_points,
 
 #define swap(a,b,t) t = a; a = b; b = t;
 
+// for SSE debugging
 void print_vec(float a, float b, float c, float d)
 {
 	printf("%f %f %f %f\n", a, b, c, d);
@@ -62,17 +63,24 @@ void draw_line(long** bmp, long x, long y, long x1, long y1)
 
 void make_rotation(float* mx, float x, float y, float z)
 {
-	mx[0] = sin(x)*sin(y)*sin(z)+cos(y)*cos(z);
-	mx[4] = sin(x)*sin(y)*cos(z)-cos(y)*sin(z);
-	mx[8] = cos(x)*sin(y);
+	float six = sin(x);
+	float siy = sin(y);
+	float siz = sin(z);
+	float cox = cos(x);
+	float coy = cos(y);
+	float coz = cos(z);
 
-	mx[1] = cos(x)*sin(z);
-	mx[5] = cos(x)*cos(z);
-	mx[9] = -sin(x);
+	mx[0] = six*siy*siz+coy*coz;
+	mx[4] = six*siy*coz-coy*siz;
+	mx[8] = cox*siy;
+
+	mx[1] = cox*siz;
+	mx[5] = cox*coz;
+	mx[9] = -six;
 	
-	mx[2] = sin(x)*cos(y)*sin(z)-sin(y)*cos(z);
-	mx[6] = sin(y)*sin(z)+sin(x)*cos(y)*cos(z);
-	mx[10] = cos(x)*cos(y);
+	mx[2] = six*coy*siz-siy*coz;
+	mx[6] = siy*siz+six*coy*coz;
+	mx[10] = cox*coy;
 
 	/*memset(mx, 0, 12*sizeof(float));
 	mx[0] = mx[5] = mx[10] = 1;*/
@@ -96,8 +104,8 @@ int main(int argc, char** argv)
 	BITMAP *buf = create_bitmap(_SCREEN_W,_SCREEN_H);
 	clear(buf);
 
-	float movmx[4] = { 0.0, 0.0, 0.0, 0.0 };
-	float rotx = 0, roty = 0, rotz = 0;
+	float movmx[4] = { 320.0, 400.0, 0.0, 0.0 };
+	float rotx = 3.14, roty = 0, rotz = 0;
 	float rotation[12];
 	for(;;) {
 		if (key[KEY_ESC]) return 0;

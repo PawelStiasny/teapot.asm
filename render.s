@@ -4,7 +4,9 @@ bits 32
 extern draw_line
 extern print_vec
 
-%macro	print_mmx 1
+; %define	EXTERN_DRAW	0
+
+%macro	print_xmm 1
 %if 0 ; disable debugging
 	push	ecx
 	push	eax
@@ -19,7 +21,7 @@ extern print_vec
 %endif
 %endmacro
 
-%macro	handle_point 0
+%macro	handle_point 2 ; X := arg 1; Y := arg 2
 ; xmm2 := vec.x
 	movaps		xmm2, xmm0
 	shufps		xmm2, xmm2, 0b00000000
@@ -38,11 +40,9 @@ extern print_vec
 	addps		xmm0, xmm1
 
 ; convert the result to integer
-	cvttss2si	esi, xmm0
+	cvttss2si	%1, xmm0
 	shufps		xmm0, xmm0, 0b00111001
-	cvttss2si	edx, xmm0
-	push	edx
-	push	esi
+	cvttss2si	%2, xmm0
 %endmacro
 
 global render
@@ -60,6 +60,7 @@ render:
 	mov		ebp, esp
 	push	esi
 	push	edi
+	push	ebx
 
 ; ecx := 24 * num_points
 	mov		ecx, num_points
@@ -75,38 +76,58 @@ render:
 ; registers xmm5..7 contain the rotation matrix
 	mov		eax, rotmx
 	movups	xmm5, [eax]
-	print_mmx(xmm5)
+	print_xmm xmm5
 	movups	xmm6, [eax+16]
-	print_mmx(xmm6)
+	print_xmm xmm6
 	movups	xmm7, [eax+32]
-	print_mmx(xmm7)
+	print_xmm xmm7
 
 	mov		eax, points
 	mov		edi, buffer
 
-draw_loop:
+vertex_loop:
 ; preserve for calling a C drawing function
+%ifdef EXTERN_DRAW
 	push	ecx
 	push	eax
+%endif
 
 	movups	xmm0, [eax+ecx-24]
-	handle_point
+	handle_point esi, edx
+	push	edx
+	push	esi
+	movaps	xmm4, xmm0
 
 	movups	xmm0, [eax+ecx-12]
-	handle_point
+	handle_point esi, edx
+	push	edx
+	push	esi
 
 	;mov		DWORD [esi+edx*4], 0xffffff	; line[..][edx] := 1
+
+%ifdef EXTERN_DRAW
 	push	buffer
 	call	draw_line
 	add		esp, 20
 	pop		eax
 	pop		ecx
+%else
 
+	; ...
 
-skip_loop:
+%endif
+
+	
+draw_loop:
+
+continue_vertex_loop:
+%ifndef EXTERN_DRAW
+	add		esp, 16		; pop calculated points
+%endif
 	sub		ecx, 24
-	jnz		draw_loop
+	jnz		vertex_loop
 
+	pop		ebx
 	pop		edi
 	pop		esi
 	leave
