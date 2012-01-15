@@ -1,4 +1,4 @@
-bits 32
+bits 64
 
 ; line drawing in C
 extern draw_line
@@ -7,18 +7,7 @@ extern print_vec
 %define	EXTERN_DRAW	1
 
 %macro	print_xmm 1
-%if 0 ; disable debugging
-	push	ecx
-	push	eax
-
-	sub		esp, 16
-	movups	[esp], %1
-	call	print_vec
-	add		esp, 16
-
-	pop		eax
-	pop		ecx
-%endif
+; ...
 %endmacro
 
 %macro	handle_point 2 ; X := arg 1; Y := arg 2
@@ -46,72 +35,58 @@ extern print_vec
 %endmacro
 
 global render
-%idefine	buffer		DWORD [ebp+8]
-%idefine	points		DWORD [ebp+12]
-%idefine	num_points	DWORD [ebp+16]
-%idefine	movmx		DWORD [ebp+20]
-%idefine	rotmx		DWORD [ebp+24]
-
 %idefine	screen_w	640
 %idefine	screen_h	480
 
 render:
-	push	ebp
-	mov		ebp, esp
-	push	esi
-	push	edi
-	push	ebx
-
-; ecx := 24 * num_points
-	mov		ecx, num_points
-	mov		eax, ecx
-	shl		ecx, 5
+	push	rbp
+	mov		rbp, rsp
+	push	rbx ; unused?
 
 ; register xmm1 contains the translation matrix
-	mov		eax, movmx
-	movups	xmm1, [eax]		; xmm1 := movx, movy, movz, ...
+	movups	xmm1, [rcx]		; xmm1 := movx, movy, movz, ...
 
 ; registers xmm5..7 contain the rotation matrix
-	mov		eax, rotmx
-	movups	xmm5, [eax]
+	movups	xmm5, [r8]
 	print_xmm xmm5
-	movups	xmm6, [eax+16]
+	movups	xmm6, [r8+16]
 	print_xmm xmm6
-	movups	xmm7, [eax+32]
+	movups	xmm7, [r8+32]
 	print_xmm xmm7
 
-	mov		eax, points
-	mov		edi, buffer
+; rcx := 32 * num_points
+	mov		rcx, rdx
+	shl		rcx, 5
+
+	mov		rax, rsi ; points
 
 vertex_loop:
 ; preserve for calling a C drawing function
 %ifdef EXTERN_DRAW
-	push	ecx
-	push	eax
+	push	rcx
+	push	rax
+	push	r8
+	push	rdi
 %endif
 
-	movaps	xmm0, [eax+ecx-32]
-	print_xmm	xmm0
-	handle_point esi, edx
-	push	edx
-	push	esi
-	movaps	xmm4, xmm0
+	movaps	xmm0, [rax+rcx-32]
+	;print_xmm	xmm0
+	handle_point rsi, rdx
+	;movaps	xmm4, xmm0
 
-	movaps	xmm0, [eax+ecx-16]
-	handle_point esi, edx
-	push	edx
-	push	esi
-
-	;mov		DWORD [esi+edx*4], 0xffffff	; line[..][edx] := 1
+	movaps	xmm0, [rax+rcx-16]
+	handle_point rcx, r8
 
 %ifdef EXTERN_DRAW
-	push	buffer
 	call	draw_line
-	add		esp, 20
-	pop		eax
-	pop		ecx
+	;add		rsp, 20
+	pop		rdi
+	pop		r8
+	pop		rax
+	pop		rcx
 %else
 
+	;mov		DWORD [rsi+edx*4], 0xffffff	; line[..][rdx] := 1
 	; ...
 
 %endif
@@ -121,14 +96,13 @@ draw_loop:
 
 continue_vertex_loop:
 %ifndef EXTERN_DRAW
-	add		esp, 16		; pop calculated points
+	;add		rsp, 16		; pop calculated points
 %endif
-	sub		ecx, 32
+	sub		rcx, 32
 	jnz		vertex_loop
 
-	pop		ebx
-	pop		edi
-	pop		esi
-	leave
+	pop		rbx
+	pop		rbp
+	;leave
 	ret
 

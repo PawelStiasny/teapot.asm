@@ -11,7 +11,7 @@ float *points = NULL;
 #define _SCREEN_W 640
 #define _SCREEN_H 480
 
-void render(long **gbuffer, float *points, unsigned long num_points,
+void render(int **gbuffer, float *points, unsigned long num_points,
 		float* movmx, float* rotmx);
 
 #define swap(a,b,t) t = a; a = b; b = t;
@@ -27,7 +27,8 @@ void load_points(const char* filename)
 {
 	FILE* f = fopen(filename, "r");
 	assert(f != NULL);
-	fscanf(f, "%ld", &num_points);
+	fscanf(f, "%lu", &num_points);
+	printf("num_points = %lu\n", num_points);
 	points = malloc((num_points+1) * 32);
 	// 16-byte alignment
 	points = (void*)(
@@ -45,7 +46,7 @@ void load_points(const char* filename)
 	fclose(f);
 }
 
-void draw_line(long** bmp, long x, long y, long x1, long y1)
+void draw_line(int** bmp, long x, long y, long x1, long y1)
 {
 	/*fprintf(stderr, "draw_line called, %ld, %ld, %ld, %ld\n", x, y, x1, y1);
 	fflush(stderr);*/
