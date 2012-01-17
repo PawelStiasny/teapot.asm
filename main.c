@@ -48,16 +48,9 @@ void load_points(const char* filename)
 
 void draw_line(int** bmp, long x, long y, long x1, long y1)
 {
-	/*fprintf(stderr, "draw_line called, %ld, %ld, %ld, %ld\n", x, y, x1, y1);
-	fflush(stderr);*/
-	/*assert(0 <= x && x < 640);
-	assert(0 <= y && y < 480);
-	assert(0 <= x1 && x1 < 640);
-	assert(0 <= y1 && y1 < 480);*/
 	if (x < 0 || x >= 640 || y < 0 || y >= 480 ||
 			x1 < 0 || x1 >= 640 || y1 < 0 || y1 >= 480)
 		return;
-	//rest(100);
 
 	int steep = abs(y1-y) > abs(x1-x);
 	long t;
