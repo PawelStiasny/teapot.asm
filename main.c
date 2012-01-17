@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 		if (key[KEY_D]) turn(&roty, -0.1);
 
 		make_rotation(rotation, rotx, roty, rotz);
-		render((long**)buf->line, points, num_points, movmx, rotation);
+		render((int**)buf->line, points, num_points, movmx, rotation);
 		blit(buf, screen, 0, 0, 0, 0, _SCREEN_W, _SCREEN_H);
 		//return 1;
 		rest(25);
