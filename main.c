@@ -1,10 +1,9 @@
-// #include <stdlib.h>
 #include <allegro.h>
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#include <locale.h>
 
-// #include "points.h"
 unsigned long num_points = 0;
 float *points = NULL;
 
@@ -16,7 +15,7 @@ void render(int **gbuffer, float *points, unsigned long num_points,
 
 #define swap(a,b,t) t = a; a = b; b = t;
 
-// for SSE debugging
+/* for SSE debugging */
 void print_vec(float a, float b, float c, float d)
 {
 	printf("%f %f %f %f\n", a, b, c, d);
@@ -30,18 +29,23 @@ void load_points(const char* filename)
 	fscanf(f, "%lu", &num_points);
 	printf("num_points = %lu\n", num_points);
 	points = malloc((num_points+1) * 32);
-	// 16-byte alignment
+	/* 16-byte alignment */
 	points = (void*)(
-			(unsigned long)points + (unsigned long)(16 - ((unsigned long)points % 16)));
+			(unsigned long)points +
+			(unsigned long)(16 - ((unsigned long)points % 16)));
 
 	unsigned long i;
 	for (i = 0; i < num_points; i++) {
 		float* line = points + i*8;
 		line[3] = line[7] = 1.0f;
-		assert(
-			fscanf(f, "%f %f %f %f %f %f", &line[0], &line[1], &line[2],
+		if (
+			fscanf(f, "%f %f %f %f %f %f",
+				&line[0], &line[1], &line[2],
 				&line[4], &line[5], &line[6])
-			== 6);
+			!= 6)
+		{
+			printf("invalid input on line %ld\n", i+2);
+		}
 	}
 	fclose(f);
 }
@@ -101,9 +105,6 @@ void make_rotation(float* mx, float x, float y, float z)
 	mx[6] = siy*siz+six*coy*coz;
 	mx[10] = cox*coy;
 
-	/*memset(mx, 0, 12*sizeof(float));
-	mx[0] = mx[5] = mx[10] = 1;*/
-
 	mx[3] = mx[7] = mx[11] = 0;
 }
 
@@ -123,6 +124,8 @@ int main(int argc, char** argv)
 	BITMAP *buf = create_bitmap(_SCREEN_W,_SCREEN_H);
 	clear(buf);
 
+	/* required for reliable parsing of point-delimeted floats */
+	setlocale(LC_NUMERIC, "C");
 	load_points("teapot");
 
 	float movmx[4] = { 320.0, 400.0, 0.0, 0.0 };
@@ -148,7 +151,6 @@ int main(int argc, char** argv)
 		make_rotation(rotation, rotx, roty, rotz);
 		render((int**)buf->line, points, num_points, movmx, rotation);
 		blit(buf, screen, 0, 0, 0, 0, _SCREEN_W, _SCREEN_H);
-		//return 1;
 		rest(25);
 		clear(buf);
 	}
