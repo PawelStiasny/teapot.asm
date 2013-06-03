@@ -1,0 +1,12 @@
+teapot.asm
+
+A wireframe renderer in C and AMD64 assembly, using the SSE instruction set.
+
+Dependencies:
+
+* gcc
+* nasm
+* allegro 4
+
+Copyright 2013 Paweł Stiasny
+Released under the terms of GNU General Public License v3
